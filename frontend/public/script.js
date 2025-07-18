@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://localhost:8080/api/login', { // Porta 8080
+                const response = await fetch('https://nexussaas-backend.onrender.com/api/login', { // Porta 8080
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch('http://localhost:8080/api/register', { // Porta 8080
+                const response = await fetch('https://nexussaas-backend.onrender.com/api/register', { // Porta 8080
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
