@@ -26,9 +26,12 @@ app.use(express.urlencoded({ extended: true }));
 console.log('[BACKEND] Middleware express.urlencoded carregado.'); // Log para confirmar o carregamento
 
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500']
+    origin: [
+        'http://127.0.0.1:5500', // Para desenvolvimento local
+        'http://localhost:5500', // Para desenvolvimento local
+        'https://nexus-saa-s-projeto-6l56jyaqh-israel-argolos-projects.vercel.app' // <<< ADICIONE ESTA LINHA COM A SUA URL REAL!
+    ]
 }));
-
 // Rota de teste simples
 app.get('/', (req, res) => {
     res.send('Backend do NexusSaaS está online e operacional!');
