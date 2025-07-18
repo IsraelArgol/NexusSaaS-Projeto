@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusSaaS - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 flex">
+    <aside class="w-64 bg-gray-800 text-white min-h-screen p-4">
+        <h1 class="text-3xl font-bold mb-8">NexusSaaS</h1>
+        <nav>
+            <ul>
+                <li class="mb-4">
+                    <a href="#" id="clonePageLink" class="block py-2 px-4 rounded hover:bg-gray-700 text-lg font-medium">Clonar Página</a>
+                </li>
+                <li class="mb-4">
+                    <a href="#" id="myProjectsLink" class="block py-2 px-4 rounded hover:bg-gray-700 text-lg font-medium">Meus Projetos</a>
+                </li>
+                <li class="mb-4">
+                    <a href="#" id="settingsLink" class="block py-2 px-4 rounded hover:bg-gray-700 text-lg font-medium">Configurações</a>
+                </li>
+                <li class="mb-4">
+                    <a href="#" id="logoutButton" class="block py-2 px-4 rounded hover:bg-gray-700 text-lg font-medium">Sair</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <h2 class="text-3xl font-bold mb-6">Bem-vindo ao seu Dashboard!</h2>
+        <div id="dashboardContent" class="bg-white p-6 rounded-lg shadow-md">
+            <p>Selecione uma opção no menu lateral para iniciar sua jornada de clonagem.</p>
+            <div id="pageMessage" class="hidden text-center mb-4 p-2 rounded"></div>
+        </div>
+    </main>
+
+    <script>
+        const dashboardContent = document.getElementById('dashboardContent');
+        const clonePageLink = document.getElementById('clonePageLink');
+        const myProjectsLink = document.getElementById('myProjectsLink');
+        const settingsLink = document.getElementById('settingsLink');
+        const logoutButton = document.getElementById('logoutButton');
+
+        // Referência à div de mensagens (na própria página)
+        const pageMessageDiv = document.getElementById('pageMessage');
+
+        // Função para mostrar mensagens de status (sucesso/erro) na própria página
+        function showStatusMessage(msg, type = 'error') {
+            pageMessageDiv.textContent = msg;
+            pageMessageDiv.className = `text-center mb-4 p-2 rounded ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+            pageMessageDiv.classList.remove('hidden');
+            setTimeout(() => pageMessageDiv.classList.add('hidden'), 5000); // Esconde após 5 segundos
+        }
+
+        // Conteúdo do formulário de clonagem
+        const cloneFormHtml = `
+            <h3 class="text-2xl font-bold mb-4">Clonar Nova Página</h3>
+            <form id="cloneForm">
+                <div class="mb-4">
+                    <label for="originalUrl" class="block text-gray-700 text-sm font-bold mb-2">URL da Página Original:</label>
+                    <input type="url" id="originalUrl" name="originalUrl" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: https://produto.com/pagina-de-vendas" required>
+                </div>
+                <div class="mb-4">
+                    <label for="originalCheckoutLink" class="block text-gray-700 text-sm font-bold mb-2">Link de Checkout ORIGINAL na Página:</label>
+                    <input type="url" id="originalCheckoutLink" name="originalCheckoutLink" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: https://checkoutoriginal.com/produto123 (o link que JÁ ESTÁ na página)" required>
+                </div>
+                <div class="mb-6">
+                    <label for="newCheckoutLink" class="block text-gray-700 text-sm font-bold mb-2">Seu NOVO Link de Checkout (Substituirá):</label>
+                    <input type="url" id="newCheckoutLink" name="newCheckoutLink" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: https://seunovocheckout.com/meu-produto" required>
+                </div>
+                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                    Clonar Página
+                </button>
+                <div id="cloneProgress" class="hidden mt-4 text-center text-blue-500">
+                    Clonando página, por favor aguarde... <br> (Isso pode levar alguns segundos)
+                </div>
+            </form>
+        `;
+
+        // Função para inicializar o formulário de clonagem e seus eventos
+        function initializeCloneForm() {
+            const cloneForm = document.getElementById('cloneForm');
+            if (cloneForm) {
+                cloneForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); // Impede o POST direto do navegador
+
+                    const originalUrl = document.getElementById('originalUrl').value;
+                    const originalCheckoutLink = document.getElementById('originalCheckoutLink').value;
+                    const newCheckoutLink = document.getElementById('newCheckoutLink').value;
+                    const cloneProgress = document.getElementById('cloneProgress');
+
+                    showStatusMessage('Iniciando Clonagem...', 'success'); // Mostra a mensagem de progresso na div
+                    cloneProgress.classList.remove('hidden');
+
+                    try {
+                        const response = await fetch('http://localhost:8080/api/clone', { // Porta 8080
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json', // ENVIAMOS JSON
+                            },
+                            body: JSON.stringify({ 
+                                originalUrl, 
+                                originalCheckoutLink, 
+                                newCheckoutLink 
+                            })
+                        });
+
+                        const data = await response.json(); // Esperamos JSON de volta
+
+                        cloneProgress.classList.add('hidden'); // Esconde a mensagem de progresso
+
+                        if (response.ok) {
+                            if (data.downloadUrl) {
+                                showStatusMessage('Download Iniciado!', 'Seu download deve começar em breve. Verifique sua pasta de downloads.', 'success');
+                                
+                                // *** Dispara o download criando um link temporário e clicando nele ***
+                           window.open(data.downloadUrl, '_blank');
+showStatusMessage('Se o download não iniciar automaticamente, clique <a href="' + data.downloadUrl + '" target="_blank" class="underline text-blue-600">aqui para baixar</a>.', 'success');
+
+
+
+                            } else {
+                                showStatusMessage('Erro!', 'Clonagem bem-sucedida, mas não foi possível obter o link de download.', 'error');
+                            }
+                        } else {
+                            showStatusMessage('Erro na Clonagem!', data.message || 'Ocorreu um erro desconhecido ao clonar a página.', 'error');
+                        }
+
+                    } catch (error) {
+                        console.error('Erro de rede ou servidor ao clonar:', error);
+                        cloneProgress.classList.add('hidden');
+                        showStatusMessage('Erro de Conexão!', 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.', 'error');
+                    }
+                });
+            }
+        }
+
+        // Event listener para o link "Clonar Página" no menu
+        clonePageLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Impede o comportamento padrão do link para mudar o conteúdo
+            dashboardContent.innerHTML = cloneFormHtml; 
+            initializeCloneForm(); // Inicializa os eventos do formulário recém-inserido
+        });
+
+        // Lógica para os outros links do menu (mantido igual)
+        myProjectsLink.addEventListener('click', (e) => { e.preventDefault(); alert('Meus Projetos em breve!'); });
+        settingsLink.addEventListener('click', (e) => { e.preventDefault(); alert('Configurações em breve!'); });
+
+        // Lógica para o botão de sair (mantido igual)
+        logoutButton.addEventListener('click', () => {
+            alert('Você foi desconectado do NexusSaaS.');
+            window.location.href = 'index.html';
+        });
+
+        // Lógica para ler mensagens de erro da URL (se o backend redirecionar com erro)
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMessage = urlParams.get('error');
+            if (errorMessage) {
+                let displayMessage = "Ocorreu um erro desconhecido.";
+                if (errorMessage === "campos_obrigatórios") {
+                    displayMessage = "Erro: Todos os campos são obrigatórios. Por favor, preencha o formulário.";
+                } else if (errorMessage === "erro_clonagem_interna") {
+                    displayMessage = "Erro na clonagem: Ocorreu um problema interno no servidor. Tente novamente.";
+                }
+                showStatusMessage(displayMessage, 'error'); 
+                history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
