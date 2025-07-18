@@ -29,7 +29,7 @@ app.use(cors({
     origin: [
         'http://127.0.0.1:5500', // Para desenvolvimento local
         'http://localhost:5500', // Para desenvolvimento local
-        'https://nexus-saa-s-projeto-6l56jyaqh-israel-argolos-projects.vercel.app' // <<< ADICIONE ESTA LINHA COM A SUA URL REAL!
+        'https://nexus-saa-s-projeto-cttg1p8p6-israel-argolos-projects.vercel.app/' // <<< ADICIONE ESTA LINHA COM A SUA URL REAL!
     ]
 }));
 // Rota de teste simples
